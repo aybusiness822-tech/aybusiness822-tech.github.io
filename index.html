@@ -149,7 +149,7 @@
             <h2>আজকের বাজারের আসল দাম</h2>
             <p>আপনার লোকেশন অনুযায়ী বর্তমান সময়ের সবজির তালিকা নিচে দেওয়া হলো:</p>
             <div class="market-grid" id="veg-list">
-                </div>
+            </div>
         </div>
 
         <div id="doctor" class="section">
@@ -191,7 +191,7 @@
             document.getElementById(sectionId).classList.add('active');
         }
 
-        // ঋতু এবং সবজির ডাটাবেজ (অটোমেটিক পরিবর্তন হওয়ার জন্য)
+        // ঋতু এবং সবজির ডাটাবেজ (সঠিক ছবি সহ আপডেট করা হয়েছে)
         const seasonalVegetables = {
             summer: [
                 { name: "কাঁচা মরিচ", price: "১২০ টাকা / কেজি", img: "https://images.unsplash.com/photo-1588252303782-cb80119abd6d?w=400" },
@@ -218,12 +218,87 @@
         };
 
         function showPosition(position) {
-            // সফলভাবে লোকেশন পেলে
             document.getElementById("location-status").innerHTML = "📍 লোকেশন এপ্রুভড (আপনার আসেপাশের বাজার যাচাই করা হচ্ছে)";
             loadVegetables();
         }
 
         function showError(error) {
+            document.getElementById("location-status").innerHTML = "⚠️ লোকেশন পাওয়া যায়নি (ডিফল্ট বাজার দর দেখানো হচ্ছে)";
+            loadVegetables();
+        }
+
+        // বর্তমান মাস অনুযায়ী সবজি ও ঋতু নির্ধারণ
+        function loadVegetables() {
+            const currentMonth = new Date().getMonth(); // ০ = জানুয়ারি, ১১ = ডিসেম্বর
+            let season = "summer"; 
+            let seasonName = "বর্তমান ঋতু: গ্রীষ্ম/বর্ষাকালীন সবজি";
+
+            if (currentMonth >= 10 || currentMonth <= 1) {
+                season = "winter";
+                seasonName = "বর্তমান ঋতু: শীতকালীন সবজি";
+            }
+
+            document.getElementById("current-season").innerText = seasonName;
+            const vegListContainer = document.getElementById("veg-list");
+            vegListContainer.innerHTML = ""; 
+
+            // সবজিগুলো কার্ড আকারে ওয়েবসাইটে দেখানো
+            seasonalVegetables[season].forEach(veg => {
+                const card = `
+                    <div class="veg-card">
+                        <img src="${veg.img}" alt="${veg.name}">
+                        <h3>${veg.name}</h3>
+                        <p>${veg.price}</p>
+                    </div>
+                `;
+                vegListContainer.innerHTML += card;
+            });
+        }
+
+        // কৃষক ডাক্তার AI সিমুলেশন
+        function askAIDoctor() {
+            const question = document.getElementById("ai-question").value;
+            const responseBox = document.getElementById("ai-response");
+            
+            if(question.trim() === "") {
+                alert("দয়া করে আগে কিছু লিখুন!");
+                return;
+            }
+
+            responseBox.style.display = "block";
+            responseBox.innerHTML = "👨‍⚕️ কৃষক ডাক্তার চিন্তা করছেন...";
+
+            setTimeout(() => {
+                let answer = "আপনার প্রশ্নের জন্য ধন্যবাদ। সবজির এই সমস্যার জন্য সঠিক পরিমাণে ট্রাইকোডার্মা কম্পোস্ট সার ব্যবহার করুন এবং আক্রান্ত পাতাগুলো কেটে দূরে ফেলে দিন। মাটি বেশি ভেজা রাখবেন না।";
+                
+                if(question.includes("পাতা")) {
+                    answer = "🍂 পাতার সমস্যার জন্য: গাছে অতিরিক্ত জল দেওয়া বন্ধ করুন। প্রতি লিটার জলে ২ গ্রাম ম্যানকোজেব জাতীয় ছত্রাকনাশক মিশিয়ে স্প্রে করতে পারেন।";
+                } else if(question.includes("পোকা")) {
+                    answer = "🐛 পোকা দমনের জন্য: জৈব উপায়ে নিম তেল স্প্রে করতে পারেন অথবা ছাই ছিটিয়ে দিতে পারেন। তীব্র আক্রমণের জন্য স্থানীয় কৃষি কর্মকর্তার পরামর্শে ইমিডাক্লোপ্রিড কীটনাশক ব্যবহার করুন।";
+                }
+
+                responseBox.innerHTML = `<b>👨‍⚕️ কৃষক ডাক্তার (AI):</b> ${answer}`;
+            }, 1500);
+        }
+
+        // ক্যালেন্ডার এডভাইস
+        function checkCalendarAdvice() {
+            const dateInput = document.getElementById("crop-date").value;
+            const adviceBox = document.getElementById("calendar-advice");
+            adviceBox.style.display = "block";
+            
+            const tips = [
+                "🌱 আজকে বীজ বপনের জন্য দারুণ দিন! জমিতে পর্যাপ্ত জো (আর্দ্রতা) আছে কিনা দেখে নিন।",
+                "💧 আজ জমিতে হালকা সেচ দেওয়ার উপযুক্ত সময়, দুপুরের কড়া রোদে সেচ দেবেন না।",
+                "🚜 আজ জমি চাষ দিয়ে রাখার ভালো দিন, এতে মাটির নিচের ক্ষতিকর পোকা রোদে মারা যাবে।"
+            ];
+            const randomTip = tips[Math.floor(Math.random() * tips.length)];
+            
+            adviceBox.innerHTML = `📅 <b>তারিখ: ${dateInput} এর পরামর্শ:</b> <br>${randomTip}`;
+        }
+    </script>
+</body>
+</html>
             // লোকেশন ডিনাই করলে বা ইরর হলে
             document.getElementById("location-status").innerHTML = "⚠️ লোকেশন পাওয়া যায়নি (ডিফল্ট বাজার দর দেখানো হচ্ছে)";
             loadVegetables();
