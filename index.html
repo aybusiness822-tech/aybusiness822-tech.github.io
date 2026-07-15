@@ -1,1 +1,307 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>কৃষক বন্ধু - সবজির সঠিক দাম ও পরামর্শ</title>
+    <style>
+        /* মূল ডিজাইন ও থিম (সবুজ ও মাটির রঙ) */
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f9f4;
+            color: #333;
+        }
+        header {
+            background-color: #2e7d32;
+            color: white;
+            padding: 20px;
+            text-align: center;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        nav {
+            display: flex;
+            justify-content: center;
+            background-color: #1b5e20;
+            padding: 10px;
+        }
+        nav a {
+            color: white;
+            text-decoration: none;
+            padding: 10px 20px;
+            margin: 0 10px;
+            font-weight: bold;
+            border-radius: 5px;
+        }
+        nav a:hover {
+            background-color: #81c784;
+            color: #1b5e20;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 20px auto;
+            padding: 20px;
+        }
+        .section {
+            background: white;
+            padding: 20px;
+            margin-bottom: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            display: none; /* শুরুতে সব হাইড থাকবে, লিংকে ক্লিক করলে দেখাবে */
+        }
+        .active {
+            display: block; /* যেটা একটিভ সেটা দেখাবে */
+        }
+        /* সবজির কার্ড ডিজাইন */
+        .market-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+        .veg-card {
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            overflow: hidden;
+            text-align: center;
+            background: #fff;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+        }
+        .veg-card img {
+            width: 100%;
+            height: 180px;
+            object-fit: cover;
+        }
+        .veg-card h3 {
+            margin: 10px 0 5px 0;
+            color: #2e7d32;
+        }
+        .veg-card p {
+            font-size: 18px;
+            font-weight: bold;
+            color: #e65100;
+            margin-bottom: 15px;
+        }
+        /* এআই ডাক্তার সেকশন */
+        .ai-box {
+            border: 2px dashed #2e7d32;
+            padding: 20px;
+            border-radius: 8px;
+            background: #f1f8e9;
+        }
+        textarea {
+            width: 100%;
+            height: 100px;
+            padding: 10px;
+            border-radius: 5px;
+            border: 1px solid #ccc;
+            margin-bottom: 10px;
+            resize: none;
+        }
+        button {
+            background-color: #2e7d32;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            font-size: 16px;
+            cursor: pointer;
+            border-radius: 5px;
+        }
+        button:hover {
+            background-color: #1b5e20;
+        }
+        .ai-reply {
+            margin-top: 15px;
+            padding: 15px;
+            background: white;
+            border-left: 5px solid #2e7d32;
+            font-weight: 500;
+        }
+        /* ক্যালেন্ডার */
+        input[type="date"] {
+            padding: 10px;
+            font-size: 16px;
+            border-radius: 5px;
+            border: 1px solid #ccc;
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>কৃষক বন্ধু (Farmer's Hub)</h1>
+        <p id="location-status">লোকেশন চেক করা হচ্ছে...</p>
+        <p id="current-season" style="font-weight: bold; color: #fff9c4;"></p>
+    </header>
+
+    <nav>
+        <a href="#" onclick="showSection('market')">বাজারের দরদাম</a>
+        <a href="#" onclick="showSection('doctor')">কৃষক ডাক্তার (AI)</a>
+        <a href="#" onclick="showSection('calendar')">ক্যালেন্ডার</a>
+        <a href="#" onclick="showSection('info')">অন্যান্য সুবিধা</a>
+    </nav>
+
+    <div class="container">
+        
+        <div id="market" class="section active">
+            <h2>আজকের বাজারের আসল দাম</h2>
+            <p>আপনার লোকেশন অনুযায়ী বর্তমান সময়ের সবজির তালিকা নিচে দেওয়া হলো:</p>
+            <div class="market-grid" id="veg-list">
+                </div>
+        </div>
+
+        <div id="doctor" class="section">
+            <h2>কৃষক ডাক্তার (AI পরামর্শ)</h2>
+            <div class="ai-box">
+                <p>আপনার ফসলের বা সবজির যেকোনো সমস্যা এখানে লিখুন (যেমন: "টমেটো গাছের পাতা শুকিয়ে যাচ্ছে কেন?"):</p>
+                <textarea id="ai-question" placeholder="আপনার প্রশ্নটি এখানে লিখুন..."></textarea>
+                <button onclick="askAIDoctor()">ডাক্তারের পরামর্শ নিন</button>
+                <div id="ai-response" class="ai-reply" style="display: none;"></div>
+            </div>
+        </div>
+
+        <div id="calendar" class="section">
+            <h2>কৃষি ক্যালেন্ডার</h2>
+            <p>তারিখ নির্বাচন করে দেখুন আজ চাষের জন্য কোনো বিশেষ পরামর্শ আছে কি না:</p>
+            <input type="date" id="crop-date" onchange="checkCalendarAdvice()">
+            <div id="calendar-advice" class="ai-reply" style="display: none;"></div>
+        </div>
+
+        <div id="info" class="section">
+            <h2>কৃষকদের জন্য বিশেষ সুবিধা</h2>
+            <h3>⛅ কৃষি আবহাওয়া পূর্বাভাস</h3>
+            <p>আজ আপনার এলাকায় আকাশ আংশিক মেঘলা থাকতে পারে। বিকেলে হালকা বৃষ্টির সম্ভাবনা রয়েছে। সেচ দেওয়ার আগে আবহাওয়া দেখে নিন।</p>
+            <hr>
+            <h3>📜 সরকারি অনুদান ও সেবা</h3>
+            <ul>
+                <li>চলতি মওসুমে সার ও বীজে ভর্তুকি পেতে স্থানীয় কৃষি অফিসে যোগাযোগ করুন।</li>
+                <li>বিনামূল্যে কৃষি পরামর্শ পেতে কল করুন: <b>১৬১২৩</b> (কৃষি কল সেন্টার)।</li>
+            </ul>
+        </div>
+
+    </div>
+
+    <script>
+        // সেকশন পরিবর্তন করার ফাংশন
+        function showSection(sectionId) {
+            const sections = document.querySelectorAll('.section');
+            sections.forEach(sec => sec.classList.remove('active'));
+            document.getElementById(sectionId).classList.add('active');
+        }
+
+        // ঋতু এবং সবজির ডাটাবেজ (অটোমেটিক পরিবর্তন হওয়ার জন্য)
+        const seasonalVegetables = {
+            summer: [
+                { name: "কাঁচা মরিচ", price: "১২০ টাকা / কেজি", img: "https://images.unsplash.com/photo-1588252303782-cb80119abd6d?w=400" },
+                { name: "মিষ্টি আলু", price: "৪০ টাকা / কেজি", img: "https://images.unsplash.com/photo-1596003906949-67221c37965c?w=400" },
+                { name: "ঝিঙ্গা", price: "৫০ টাকা / কেজি", img: "https://images.unsplash.com/photo-1603052875302-d376b7c0638a?w=400" },
+                { name: "পটল", price: "৪৫ টাকা / কেজি", img: "https://images.unsplash.com/photo-1622560480605-d83c853bc5c3?w=400" }
+            ],
+            winter: [
+                { name: "ফুলকপি", price: "৩০ টাকা / পিস", img: "https://images.unsplash.com/photo-1568584711075-3d021a7c3ecf?w=400" },
+                { name: "বাঁধাকপি", price: "২৫ টাকা / পিস", img: "https://images.unsplash.com/photo-1592417817098-8f3d6eb19675?w=400" },
+                { name: "নতুন আলু", price: "৩৫ টাকা / কেজি", img: "https://images.unsplash.com/photo-1518977676601-b53f82aba655?w=400" },
+                { name: "গাজর", price: "৬০ টাকা / কেজি", img: "https://images.unsplash.com/photo-1598170845058-32b9d6a5da37?w=400" }
+            ]
+        };
+
+        // লোকেশন অ্যাক্সেস চাওয়া
+        window.onload = function() {
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(showPosition, showError);
+            } else {
+                document.getElementById("location-status").innerHTML = "আপনার ব্রাউজার লোকেশন সাপোর্ট করে না।";
+                loadVegetables(); // ডিফল্ট সবজি লোড
+            }
+        };
+
+        function showPosition(position) {
+            // সফলভাবে লোকেশন পেলে
+            document.getElementById("location-status").innerHTML = "📍 লোকেশন এপ্রুভড (আপনার আসেপাশের বাজার যাচাই করা হচ্ছে)";
+            loadVegetables();
+        }
+
+        function showError(error) {
+            // লোকেশন ডিনাই করলে বা ইরর হলে
+            document.getElementById("location-status").innerHTML = "⚠️ লোকেশন পাওয়া যায়নি (ডিফল্ট বাজার দর দেখানো হচ্ছে)";
+            loadVegetables();
+        }
+
+        // বর্তমান মাস অনুযায়ী সবজি ও ঋতু নির্ধারণ
+        function loadVegetables() {
+            const currentMonth = new Date().getMonth(); // ০ = জানুয়ারি, ১১ = ডিসেম্বর
+            let season = "summer"; 
+            let seasonName = "বর্তমান ঋতু: গ্রীষ্ম/বর্ষাকালীন সবজি";
+
+            // নভেম্বর থেকে ফেব্রুয়ারি মাসকে শীতকাল ধরা হলো
+            if (currentMonth >= 10 || currentMonth <= 1) {
+                season = "winter";
+                seasonName = "বর্তমান ঋতু: শীতকালীন সবজি";
+            }
+
+            document.getElementById("current-season").innerText = seasonName;
+            const vegListContainer = document.getElementById("veg-list");
+            vegListContainer.innerHTML = ""; // আগের সবজি পরিষ্কার করা
+
+            // সবজিগুলো কার্ড আকারে ওয়েবসাইটে দেখানো
+            seasonalVegetables[season].forEach(veg => {
+                const card = `
+                    <div class="veg-card">
+                        <img src="${veg.img}" alt="${veg.name}">
+                        <h3>${veg.name}</h3>
+                        <p>${veg.price}</p>
+                    </div>
+                `;
+                vegListContainer.innerHTML += card;
+            });
+        }
+
+        // কৃষক ডাক্তার AI সিমুলেশন (জেমিনি স্টাইল রিপ্লাই)
+        function askAIDoctor() {
+            const question = document.getElementById("ai-question").value;
+            const responseBox = document.getElementById("ai-response");
+            
+            if(question.trim() === "") {
+                alert("দয়া করে আগে কিছু লিখুন!");
+                return;
+            }
+
+            responseBox.style.display = "block";
+            responseBox.innerHTML = "👨‍⚕️ কৃষক ডাক্তার চিন্তা করছেন...";
+
+            // একটি ডেমো এআই মেকানিজম (ভবিষ্যতে আসল জেমিনি এপিআই যুক্ত করা যাবে)
+            setTimeout(() => {
+                let answer = "আপনার প্রশ্নের জন্য ধন্যবাদ। সবজির এই সমস্যার জন্য সঠিক পরিমাণে ট্রাইকোডার্মা কম্পোস্ট সার ব্যবহার করুন এবং আক্রান্ত পাতাগুলো কেটে দূরে ফেলে দিন। মাটি বেশি ভেজা রাখবেন না।";
+                
+                if(question.includes("পাতা")) {
+                    answer = "🍂 পাতার সমস্যার জন্য: গাছে অতিরিক্ত জল দেওয়া বন্ধ করুন। প্রতি লিটার জলে ২ গ্রাম ম্যানকোজেব জাতীয় ছত্রাকনাশক মিশিয়ে স্প্রে করতে পারেন।";
+                } else if(question.includes("পোকা")) {
+                    answer = "🐛 পোকা দমনের জন্য: জৈব উপায়ে নিম তেল স্প্রে করতে পারেন অথবা ছাই ছিটিয়ে দিতে পারেন। তীব্র আক্রমণের জন্য স্থানীয় কৃষি কর্মকর্তার পরামর্শে ইমিডাক্লোপ্রিড কীটনাশক ব্যবহার করুন।";
+                }
+
+                responseBox.innerHTML = `<b>👨‍⚕️ কৃষক ডাক্তার (AI):</b> ${answer}`;
+            }, 1500);
+        }
+
+        // ক্যালেন্ডার এডভাইস
+        function checkCalendarAdvice() {
+            const dateInput = document.getElementById("crop-date").value;
+            const adviceBox = document.getElementById("calendar-advice");
+            adviceBox.style.display = "block";
+            
+            // র্যান্ডম চাষের টিপস জেনারেট করা
+            const tips = [
+                "🌱 আজকে বীজ বপনের জন্য দারুণ দিন! জমিতে পর্যাপ্ত জো (আর্দ্রতা) আছে কিনা দেখে নিন।",
+                "💧 আজ জমিতে হালকা সেচ দেওয়ার উপযুক্ত সময়, দুপুরের কড়া রোদে সেচ দেবেন না।",
+                "🚜 আজ জমি চাষ দিয়ে রাখার ভালো দিন, এতে মাটির নিচের ক্ষতিকর পোকা রোদে মারা যাবে।"
+            ];
+            const randomTip = tips[Math.floor(Math.random() * tips.length)];
+            
+            adviceBox.innerHTML = `📅 <b>তারিখ: ${dateInput} এর পরামর্শ:</b> <br>${randomTip}`;
+        }
+    </script>
+</body>
+  </html>
 
